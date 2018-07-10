@@ -1,3 +1,6 @@
+var arg1 = process.argv.slice(2)[0];
+var arg2 = process.argv.slice(2)[1];
+
 var fs = require("fs");
 var request = require("request");
 // require authorizations
@@ -15,18 +18,20 @@ function getRepoContributors(repoOwner, repoName, cb) {
   request(options, function(err, res, body) {
     body = JSON.parse(body);
 
+    console.log("Downloading images...");
     body.forEach(contributor => {
       avatar = contributor.avatar_url;
       filePath = "./avatars/" + contributor.login + ".jpg";
       // console.log(filePath);
       cb(err, avatar, filePath);
     });
+    console.log("Download complete!");
 
   });
 
 }
 
-getRepoContributors("aseprite", "aseprite", function(err, avatar, filePath) {
+getRepoContributors(arg1, args2, function(err, avatar, filePath) {
   if (err) throw err;
 
   downloadImageByURL(avatar, filePath);
@@ -35,12 +40,12 @@ getRepoContributors("aseprite", "aseprite", function(err, avatar, filePath) {
 
 function downloadImageByURL(url, filePath) {
   request.get(url)
-  .on("error", err => {
-    throw err;
-  })
-  .on("response", response => {
-    console.log("Downloading images...");
-  }).pipe(fs.createWriteStream(filePath));
+    .on("error", err => {
+      throw err;
+    })
+    .on("response", response => {
+    })
+    .pipe(fs.createWriteStream(filePath));
 }
 
 // downloadImageByURL("https://avatars2.githubusercontent.com/u/2741?v=3&s=466", "avatars/avatar.jpg");
