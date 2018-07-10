@@ -1,18 +1,25 @@
+// Get command line arguments
 var owner = process.argv.slice(2)[0];
 var name = process.argv.slice(2)[1];
 
 var fs = require("fs");
 var request = require("request");
+
 // require authorizations
 var secrets = require("./secrets");
 
+// Declare new function to get repo contributor info
 function getRepoContributors(repoOwner, repoName, cb) {
   console.log("Welcome to the Github Avatar Downloader!");
+
+  // "Error" in case of missing arguments
   var oops = "Oops! You need to specify a repo owner and name.";
   if (!repoOwner || !repoName) {
     console.log(oops);
     return oops;
   }
+
+  // Specify options for https request
   var options = {
     url: `https://api.github.com/repos/${repoOwner}/${repoName}/contributors`,
     headers: {
@@ -21,6 +28,7 @@ function getRepoContributors(repoOwner, repoName, cb) {
     }
   };
 
+  // Make request for github repo contributor info
   request(options, function(err, res, body) {
     body = JSON.parse(body);
 
@@ -37,6 +45,7 @@ function getRepoContributors(repoOwner, repoName, cb) {
 
 }
 
+// Call to get repo contributor info
 getRepoContributors(owner, name, function(err, avatar, filePath) {
   if (err) throw err;
 
@@ -44,6 +53,7 @@ getRepoContributors(owner, name, function(err, avatar, filePath) {
 
 });
 
+// Function declaration to download avatars by URLS
 function downloadImageByURL(url, filePath) {
   request.get(url)
     .on("error", err => {
@@ -54,7 +64,3 @@ function downloadImageByURL(url, filePath) {
     .pipe(fs.createWriteStream(filePath));
 }
 
-// downloadImageByURL("https://avatars2.githubusercontent.com/u/2741?v=3&s=466", "avatars/avatar.jpg");
-
-// url = "https://avatars2.githubusercontent.com/u/2741?v=3&s=466";
-// filePath = "avatars/avatar.jpg";
