@@ -10,4 +10,5 @@ This program should be executed from the command line, in the following manner:
 
 `node download_avatars.js jquery jquery`
 
-... (nothing more to add atm)
+## Secrets.js
+Please remember to add your github token to the secrets_example.js file and rename as secrets.js
