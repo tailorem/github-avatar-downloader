@@ -1,34 +1,38 @@
+// Get authorizations
+require('dotenv').config();
+
+// Get libraries
+var fs = require("fs");
+var request = require("request");
+
 // Get command line arguments
 var owner = process.argv.slice(2)[0];
 var name = process.argv.slice(2)[1];
 
-var fs = require("fs");
-var request = require("request");
-
-// require authorizations
-var secrets = require("./secrets");
-
-// Declare new function to get repo contributor info
+// Declares new function to get repo contributor info
 function getRepoContributors(repoOwner, repoName, cb) {
   console.log("Welcome to the Github Avatar Downloader!");
 
-  // "Error" in case of missing arguments
+  // Logs an "error" in case of missing arguments
   var oops = "Oops! You need to specify a repo owner and name.";
   if (!repoOwner || !repoName) {
     console.log(oops);
     return oops;
   }
 
+  // Create "avatars" directory to store avatar images if one does not exist
+  if (!fs.existsSync("./avatars")) fs.mkdirSync("./avatars");
+
   // Specify options for https request
   var options = {
     url: `https://api.github.com/repos/${repoOwner}/${repoName}/contributors`,
     headers: {
       "User-Agent": "request",
-      "Authorization": secrets.GITHUB_TOKEN
+      "Authorization": process.env.GITHUB_TOKEN
     }
   };
 
-  // Make request for github repo contributor info
+  // Makes request for github repo contributor info
   request(options, function(err, res, body) {
     body = JSON.parse(body);
 
@@ -45,7 +49,7 @@ function getRepoContributors(repoOwner, repoName, cb) {
 
 }
 
-// Call to get repo contributor info
+// Calls to get repo contributor info
 getRepoContributors(owner, name, function(err, avatar, filePath) {
   if (err) throw err;
 
@@ -53,7 +57,7 @@ getRepoContributors(owner, name, function(err, avatar, filePath) {
 
 });
 
-// Function declaration to download avatars by URLS
+// Downloads avatars by URLS
 function downloadImageByURL(url, filePath) {
   request.get(url)
     .on("error", err => {

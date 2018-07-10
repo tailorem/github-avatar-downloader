@@ -2,6 +2,7 @@ package-lock.json
 
 # Authorizations
 secrets.js
+.env
 
 
 # Logs
