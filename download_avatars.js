@@ -1,3 +1,4 @@
+var fs = require("fs");
 var request = require("request");
 // require authorizations
 var secrets = require("./secrets");
@@ -13,20 +14,38 @@ function getRepoContributors(repoOwner, repoName, cb) {
 
   request(options, function(err, res, body) {
     body = JSON.parse(body);
-    // console.log(body);
-    cb(err, body);
+
+    body.forEach(contributor => {
+      avatar = contributor.avatar_url;
+      filePath = "./avatars/" + contributor.login + ".jpg";
+      // console.log(filePath);
+      cb(err, avatar, filePath);
+    });
+
   });
 
 }
 
-getRepoContributors("aseprite", "aseprite", function(err, response) {
+getRepoContributors("aseprite", "aseprite", function(err, avatar, filePath) {
   if (err) throw err;
 
-  response.forEach(worker => {
-    console.log(worker.avatar_url);
-  });
-  // console.log("Error:", err);
-  // console.log("Result:", response);
+  downloadImageByURL(avatar, filePath);
+
 });
+
+function downloadImageByURL(url, filePath) {
+  request.get(url)
+  .on("error", err => {
+    throw err;
+  })
+  .on("response", response => {
+    console.log("Downloading images...");
+  }).pipe(fs.createWriteStream(filePath));
+}
+
+// downloadImageByURL("https://avatars2.githubusercontent.com/u/2741?v=3&s=466", "avatars/avatar.jpg");
+
+// url = "https://avatars2.githubusercontent.com/u/2741?v=3&s=466";
+filePath = "avatars/avatar.jpg";
 
 console.log("Welcome to the Github Avatar Downloader!");
