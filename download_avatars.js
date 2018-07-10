@@ -6,22 +6,34 @@ var fs = require("fs");
 var request = require("request");
 
 // Get command line arguments
-var owner = process.argv.slice(2)[0];
-var name = process.argv.slice(2)[1];
+var args = process.argv;
+if (args.length !== 4) {
+  console.log("Oops! You need to specify a repo owner and name.");
+  return;
+}
+var owner = args.slice(2)[0];
+var name = args.slice(2)[1];
 
 // Declares new function to get repo contributor info
 function getRepoContributors(repoOwner, repoName, cb) {
-  console.log("Welcome to the Github Avatar Downloader!");
-
   // Logs an "error" in case of missing arguments
-  var oops = "Oops! You need to specify a repo owner and name.";
-  if (!repoOwner || !repoName) {
-    console.log(oops);
-    return oops;
-  }
 
   // Create "avatars" directory to store avatar images if one does not exist
   if (!fs.existsSync("./avatars")) fs.mkdirSync("./avatars");
+
+  // Logs an "error" in case of missing/misplaced .env file
+  if (!fs.existsSync("./.env")) {
+    console.log("Oops! Your .env file seems to be missing.");
+    return;
+  }
+
+  // Logs an "error" in case of missing info in .env file
+  if (!process.env.GITHUB_TOKEN) {
+    console.log("Oops! Your .env file seems to be missing your Github token.");
+    return;
+  }
+
+  console.log("Welcome to the Github Avatar Downloader!");
 
   // Specify options for https request
   var options = {
@@ -44,17 +56,13 @@ function getRepoContributors(repoOwner, repoName, cb) {
       cb(err, avatar, filePath);
     });
     console.log("Download complete!");
-
   });
-
 }
 
 // Calls to get repo contributor info
 getRepoContributors(owner, name, function(err, avatar, filePath) {
   if (err) throw err;
-
   downloadImageByURL(avatar, filePath);
-
 });
 
 // Downloads avatars by URLS
@@ -64,6 +72,9 @@ function downloadImageByURL(url, filePath) {
       throw err;
     })
     .on("response", response => {
+      if (response.statusCode !== 200) {
+        console.log("oops!");
+      }
     })
     .pipe(fs.createWriteStream(filePath));
 }
